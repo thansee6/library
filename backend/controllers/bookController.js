@@ -66,7 +66,15 @@ exports.getBook = async (req, res) => {
 
 exports.createBook = async (req, res) => {
   try {
-    const book = await Book.create(req.body);
+    const bookData = { ...req.body };
+    if (req.file) {
+      bookData.coverImage = `/uploads/books/${req.file.filename}`;
+    }
+    // Also set availableStock equal to initial stock
+    if (bookData.stock) {
+      bookData.availableStock = bookData.stock;
+    }
+    const book = await Book.create(bookData);
     res.status(201).json({ success: true, data: book });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -78,7 +86,12 @@ exports.updateBook = async (req, res) => {
     const book = await Book.findByPk(req.params.id);
     if (!book) return res.status(404).json({ success: false, message: 'Book not found' });
     
-    await book.update(req.body);
+    const bookData = { ...req.body };
+    if (req.file) {
+      bookData.coverImage = `/uploads/books/${req.file.filename}`;
+    }
+    
+    await book.update(bookData);
     res.json({ success: true, data: book });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });

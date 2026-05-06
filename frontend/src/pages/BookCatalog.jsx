@@ -10,10 +10,26 @@ const BookCatalog = () => {
   const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     fetchCategories();
+    const stored = localStorage.getItem('favorites');
+    if (stored) {
+      setFavorites(JSON.parse(stored));
+    }
   }, []);
+
+  const toggleFavorite = (book) => {
+    let updated;
+    if (favorites.some(f => f.id === book.id)) {
+      updated = favorites.filter(f => f.id !== book.id);
+    } else {
+      updated = [...favorites, book];
+    }
+    setFavorites(updated);
+    localStorage.setItem('favorites', JSON.stringify(updated));
+  };
 
   useEffect(() => {
     fetchBooks();
@@ -89,10 +105,21 @@ const BookCatalog = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {books.map(book => (
-                <div key={book.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow group">
+                <div key={book.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow group relative">
+                  <button
+                    onClick={() => toggleFavorite(book)}
+                    className="absolute top-4 right-4 bg-white/90 hover:bg-white text-lg p-1.5 rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all z-10 cursor-pointer"
+                    title={favorites.some(f => f.id === book.id) ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    {favorites.some(f => f.id === book.id) ? '❤️' : '🤍'}
+                  </button>
                   <div className="w-full h-48 bg-gray-50 rounded-lg mb-4 flex items-center justify-center text-gray-400 group-hover:bg-gray-100 transition-colors">
                     {book.coverImage ? (
-                       <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover rounded-lg" />
+                       <img 
+                        src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${book.coverImage}`} 
+                        alt={book.title} 
+                        className="w-full h-full object-cover rounded-lg" 
+                      />
                     ) : (
                       <span className="text-5xl opacity-50">📖</span>
                     )}

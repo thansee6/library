@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import API from '../utils/api';
+import AdminLayout from '../components/AdminLayout';
 
 const InventoryManagement = () => {
   const [activeTab, setActiveTab] = useState('books');
@@ -11,6 +12,7 @@ const InventoryManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({});
+  const [selectedFile, setSelectedFile] = useState(null);
 
 
   const [authors, setAuthors] = useState([]);
@@ -66,6 +68,7 @@ const InventoryManagement = () => {
 
   const handleOpenModal = (item = null) => {
     setEditingItem(item);
+    setSelectedFile(null);
     if (item) {
       setFormData(item);
     } else {
@@ -78,10 +81,22 @@ const InventoryManagement = () => {
     e.preventDefault();
     try {
       const endpoint = activeTab === 'books' ? '/books' : activeTab === 'authors' ? '/authors' : '/categories';
+      
+      let payload = formData;
+      
+      // If it's a book and a file is selected, use FormData
+      if (activeTab === 'books' && selectedFile) {
+        payload = new FormData();
+        Object.keys(formData).forEach(key => {
+          payload.append(key, formData[key]);
+        });
+        payload.append('coverImage', selectedFile);
+      }
+
       if (editingItem) {
-        await API.put(`${endpoint}/${editingItem.id}`, formData);
+        await API.put(`${endpoint}/${editingItem.id}`, payload);
       } else {
-        await API.post(endpoint, formData);
+        await API.post(endpoint, payload);
       }
       setIsModalOpen(false);
       fetchData();
@@ -91,11 +106,10 @@ const InventoryManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8fc] p-6 font-sans">
+    <AdminLayout title="Inventory Management">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#1a237e]">Inventory Management</h1>
             <p className="text-[#607d8b]">Manage your books, authors, and categories.</p>
           </div>
           <button 
@@ -146,8 +160,19 @@ const InventoryManagement = () => {
                 {data.map(item => (
                   <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                     <td className="p-4">
-                      <div className="font-bold text-[#1a237e]">{activeTab === 'books' ? item.title : item.name}</div>
-                      {activeTab === 'books' && <div className="text-xs text-gray-400">ISBN: {item.isbn}</div>}
+                      <div className="flex items-center">
+                        {activeTab === 'books' && item.coverImage && (
+                          <img 
+                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${item.coverImage}`} 
+                            alt={item.title} 
+                            className="w-10 h-14 object-cover rounded mr-3 shadow-sm"
+                          />
+                        )}
+                        <div>
+                          <div className="font-bold text-[#1a237e]">{activeTab === 'books' ? item.title : item.name}</div>
+                          {activeTab === 'books' && <div className="text-xs text-gray-400">ISBN: {item.isbn}</div>}
+                        </div>
+                      </div>
                     </td>
                     <td className="p-4 text-sm text-[#607d8b]">
                       {activeTab === 'books' ? (
@@ -248,6 +273,15 @@ const InventoryManagement = () => {
                       {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Cover Image</label>
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      onChange={e => setSelectedFile(e.target.files[0])}
+                    />
+                  </div>
                 </>
               ) : (
                 <>
@@ -295,7 +329,7 @@ const InventoryManagement = () => {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 };
 

@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import API from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const { email, password } = formData;
@@ -23,8 +25,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { data } = await API.post('/auth/login', { email, password });
-      localStorage.setItem('user', JSON.stringify(data));
+      await login(email, password);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
@@ -83,15 +84,19 @@ const Login = () => {
                 <span style={{ fontSize: '1.2em' }}>🔒</span>
               </span>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={onChange}
                 required
                 className="w-full pl-11 pr-11 py-3 rounded-lg bg-[#f0f4f8] border border-[#dce4ec] text-[#2c3e50] placeholder-[#aab2bd] focus:outline-none focus:ring-2 focus:ring-[#3f51b5]/30 focus:border-transparent transition-all"
                 placeholder="••••••••"
               />
-              <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aab2bd] hover:text-[#78909c]">
-                <span style={{ fontSize: '1.2em' }}>👁</span>
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aab2bd] hover:text-[#78909c]"
+              >
+                <span style={{ fontSize: '1.2em' }}>{showPassword ? '🙈' : '👁'}</span>
               </button>
             </div>
           </div>

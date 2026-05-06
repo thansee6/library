@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,13 +25,11 @@ const Home = () => {
 
         <div className="w-full max-w-[400px]">
           {user ? (
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-white/50 text-center">
-              <h2 className="text-2xl font-bold text-[#1a237e] mb-2">Welcome back, {user.username}!</h2>
-              <p className="text-[#607d8b] mb-6 text-sm">You are logged in as a <span className="font-semibold">{user.role}</span>.</p>
-              <Link to="/catalog" className="inline-block w-full py-3 px-4 rounded-lg bg-[#009688] text-white font-bold hover:bg-[#00796b] transition-all shadow-md">
-                Go to Catalog
-              </Link>
-            </div>
+            user.role === 'admin' ? (
+              <Navigate to="/admin/dashboard" replace />
+            ) : (
+              <Navigate to="/catalog" replace />
+            )
           ) : (
             <LoginForm showTitle={false} />
           )}

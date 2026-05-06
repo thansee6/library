@@ -25,13 +25,7 @@ const LoginForm = ({ showRegisterLink = true, showForgotPassword = true, isCompa
     setLoading(true);
 
     try {
-      const { data } = await API.post('/auth/login', { email, password });
-
-      if (login) {
-        login(data);
-      } else {
-        localStorage.setItem('user', JSON.stringify(data));
-      }
+      await login(email, password);
       navigate('/catalog'); 
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');

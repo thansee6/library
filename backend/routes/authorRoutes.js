@@ -10,10 +10,10 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 
 router.route('/')
   .get(getAuthors)
-  .post(protect, authorize('admin', 'librarian'), createAuthor);
+  .post(protect, authorize('admin'), createAuthor);
 
 router.route('/:id')
-  .put(protect, authorize('admin', 'librarian'), updateAuthor)
-  .delete(protect, authorize('admin', 'librarian'), deleteAuthor);
+  .put(protect, authorize('admin'), updateAuthor)
+  .delete(protect, authorize('admin'), deleteAuthor);
 
 module.exports = router;
