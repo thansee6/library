@@ -152,9 +152,53 @@ const getAllBorrowings = async (req, res) => {
   }
 };
 
+const clearBorrowing = async (req, res) => {
+  try {
+    const borrowingId = req.params.id;
+
+    const borrowing = await Borrowing.findByPk(borrowingId);
+
+    if (!borrowing) {
+      return res.status(404).json({ message: 'Borrowing record not found' });
+    }
+
+    if (borrowing.status === 'returned') {
+      return res.status(400).json({ message: 'Book has already been returned' });
+    }
+
+    borrowing.status = 'returned';
+    borrowing.returnDate = new Date();
+    await borrowing.save();
+
+    const book = await Book.findByPk(borrowing.bookId);
+    if (book) {
+      book.availableStock += 1;
+      await book.save();
+    }
+
+    const borrowingWithDetails = await Borrowing.findByPk(borrowing.id, {
+      include: [
+        { model: Book, as: 'book' },
+        { model: User, as: 'user', attributes: ['id', 'username', 'email'] }
+      ]
+    });
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('book_returned', borrowingWithDetails);
+    }
+
+    res.json(borrowingWithDetails);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 module.exports = {
   borrowBook,
   returnBook,
   getBorrowingHistory,
-  getAllBorrowings
+  getAllBorrowings,
+  clearBorrowing
 };

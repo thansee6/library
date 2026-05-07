@@ -26,6 +26,19 @@ app.set('io', io);
 
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
+
+  socket.on('join_room', (room) => {
+    socket.join(room);
+    console.log(`User ${socket.id} joined room: ${room}`);
+  });
+
+  socket.on('send_message', (message) => {
+    // message structure: { room, senderId, senderName, text, timestamp }
+    io.to(message.room).emit('receive_message', message);
+    // Also relay to the 'admin_support' channel so admins are notified and can register active chat sessions in real-time!
+    io.to('admin_support').emit('receive_message', message);
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });

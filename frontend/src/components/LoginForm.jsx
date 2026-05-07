@@ -10,6 +10,7 @@ const LoginForm = ({ showRegisterLink = true, showForgotPassword = true, isCompa
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -83,13 +84,20 @@ const LoginForm = ({ showRegisterLink = true, showForgotPassword = true, isCompa
               <span style={{ fontSize: '1.2em' }}>🔒</span>
             </span>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={onChange}
               required
               className="w-full pl-11 pr-11 py-3 rounded-lg bg-[#f0f4f8] border border-[#dce4ec] text-[#2c3e50] placeholder-[#aab2bd] focus:outline-none focus:ring-2 focus:ring-[#1a237e]/30 focus:border-transparent transition-all"
               placeholder="••••••••"
             />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aab2bd] hover:text-[#78909c]"
+            >
+              <span style={{ fontSize: '1.2em' }}>{showPassword ? '🙈' : '👁'}</span>
+            </button>
           </div>
         </div>
 

@@ -62,23 +62,6 @@ const Dashboard = () => {
           </div>
         ))}
       </div>
-      
-      <div className="mt-10 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-[#1a237e]">Quick Actions</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link to="/catalog" className="flex items-center justify-center py-3 px-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm">
-                Go to Catalog
-            </Link>
-            <Link to="/admin/inventory" className="flex items-center justify-center py-3 px-4 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium text-sm">
-                Manage Inventory
-            </Link>
-            <Link to="/" className="flex items-center justify-center py-3 px-4 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium text-sm">
-                Back to Home
-            </Link>
-        </div>
-      </div>
     </AdminLayout>
   );
 };

@@ -21,6 +21,16 @@ const ActiveBorrows = () => {
     fetchBorrowings();
   }, []);
 
+  const handleClearBorrowing = async (id) => {
+    if (!window.confirm('Are you sure you want to clear this active borrow? This will mark the book as returned and update the available stock.')) return;
+    try {
+      await API.post(`/borrowings/clear/${id}`);
+      fetchBorrowings();
+    } catch (err) {
+      alert('Failed to clear borrowing: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString();
@@ -39,6 +49,7 @@ const ActiveBorrows = () => {
                 <th className="p-4 font-bold text-[#2c3e50] text-sm uppercase">User</th>
                 <th className="p-4 font-bold text-[#2c3e50] text-sm uppercase">Dates</th>
                 <th className="p-4 font-bold text-[#2c3e50] text-sm uppercase">Status</th>
+                <th className="p-4 font-bold text-[#2c3e50] text-sm uppercase text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -66,11 +77,23 @@ const ActiveBorrows = () => {
                       {borrow.status}
                     </span>
                   </td>
+                  <td className="p-4 text-right">
+                    {borrow.status !== 'returned' ? (
+                      <button
+                        onClick={() => handleClearBorrowing(borrow.id)}
+                        className="text-xs font-bold text-red-600 hover:text-red-800 transition-colors bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg uppercase tracking-wider"
+                      >
+                        Clear Borrow
+                      </button>
+                    ) : (
+                      <span className="text-xs font-semibold text-gray-400">Cleared</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {borrowings.length === 0 && (
                 <tr>
-                  <td colSpan="4" className="p-8 text-center text-gray-500">No borrows found.</td>
+                  <td colSpan="5" className="p-8 text-center text-gray-500">No borrows found.</td>
                 </tr>
               )}
             </tbody>

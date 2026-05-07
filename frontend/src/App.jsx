@@ -19,6 +19,7 @@ import Favorites from './pages/Favorites';
 import Navbar from './components/Navbar';
 import { useAuth } from './context/AuthContext';
 import { useSocket } from './context/SocketContext';
+import SupportChat from './components/SupportChat';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -96,12 +97,14 @@ const GlobalNotifications = () => {
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const showNavbar = location.pathname !== '/' && !location.pathname.startsWith('/admin');
+  const { user } = useAuth();
+  const showNavbar = (location.pathname !== '/' || (user && user.role !== 'admin')) && !location.pathname.startsWith('/admin');
 
   return (
     <>
       {showNavbar && <Navbar />}
       <GlobalNotifications />
+      <SupportChat />
       {children}
     </>
   );

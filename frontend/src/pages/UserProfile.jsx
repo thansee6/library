@@ -4,18 +4,15 @@ import API from '../utils/api';
 
 const UserProfile = () => {
   const { user, updateUser } = useAuth();
-  const [activeTab, setActiveTab] = useState('view'); // 'view' | 'edit' | 'password'
+  const [activeTab, setActiveTab] = useState('view');
 
-  // Edit Profile fields
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
 
-  // Change Password fields
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Status states
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -89,7 +86,6 @@ const UserProfile = () => {
           <p className="text-gray-500">Manage your profile details and security preferences.</p>
         </div>
 
-        {/* Status Messages */}
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-xl shadow-sm mb-6 flex items-center gap-3 animate-fade-in">
             <span className="text-xl">⚠️</span>
@@ -104,7 +100,6 @@ const UserProfile = () => {
         )}
 
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Tabs header */}
           <div className="flex border-b border-gray-100 bg-gray-50/50">
             <button
               onClick={() => { setActiveTab('view'); setError(''); setSuccess(''); }}
@@ -139,7 +134,6 @@ const UserProfile = () => {
           </div>
 
           <div className="p-8">
-            {/* View Profile details tab */}
             {activeTab === 'view' && (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-100">
@@ -168,7 +162,6 @@ const UserProfile = () => {
               </div>
             )}
 
-            {/* Edit Profile tab */}
             {activeTab === 'edit' && (
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div>
@@ -201,7 +194,6 @@ const UserProfile = () => {
               </form>
             )}
 
-            {/* Change Password tab */}
             {activeTab === 'password' && (
               <form onSubmit={handleChangePassword} className="space-y-6">
                 <div>
