@@ -1,56 +1,106 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
+import API from '../utils/api';
 
 const SupportChat = () => {
   const socket = useSocket();
   const { user } = useAuth();
   
-  if (!user) return null;
-
-  const isAdmin = user.role === 'admin';
+  const isAdmin = user ? user.role === 'admin' : false;
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Admin-specific state
-  const [activeUsers, setActiveUsers] = useState([]); // List of users who have chatted
-  const [selectedUser, setSelectedUser] = useState(null); // { id, username }
+  const [activeUsers, setActiveUsers] = useState([]); 
+  const [selectedUser, setSelectedUser] = useState(null); 
   
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    if (!socket) return;
+  const saveMessagesToLocal = (roomId, newMessages) => {
+    localStorage.setItem(`chat_messages_${roomId}`, JSON.stringify(newMessages));
+  };
 
-    // Standard User joins their own private room
+  const loadMessagesFromLocal = (roomId) => {
+    const saved = localStorage.getItem(`chat_messages_${roomId}`);
+    return saved ? JSON.parse(saved) : [];
+  };
+
+  useEffect(() => {
+    if (user && !isAdmin) {
+      const roomId = `room_${user.id || user._id}`;
+      const historical = loadMessagesFromLocal(roomId);
+      setMessages(historical);
+    }
+  }, [user, isAdmin]);
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      const loadUsersForChat = async () => {
+        try {
+          const { data } = await API.get('/users');
+          const members = data.data.filter(u => u.role !== 'admin');
+          setActiveUsers(members.map(u => ({ id: u.id || u._id, username: u.username, hasUnread: false })));
+        } catch (err) {
+          console.error('Failed to load users for chat:', err);
+        }
+      };
+      loadUsersForChat();
+    }
+  }, [isAdmin, user]);
+
+  useEffect(() => {
+    if (!socket || !user) return;
+
     if (!isAdmin) {
-      socket.emit('join_room', `room_${user.id}`);
+      socket.emit('join_room', `room_${user.id || user._id}`);
     } else {
-      // Admin joins general admin support room to listen for initial joins
       socket.emit('join_room', 'admin_support');
     }
 
     const handleMessage = (msg) => {
-      // For Admin
       if (isAdmin) {
-        if (msg.senderId !== user.id) {
-          // If the sender is not in the list of active users, add them
-          setActiveUsers(prev => {
-            if (!prev.find(u => u.id === msg.senderId)) {
-              return [...prev, { id: msg.senderId, username: msg.senderName }];
-            }
-            return prev;
-          });
+        if (String(msg.senderId) === String(user.id || user._id)) {
+          return; 
         }
 
-        // Add message to timeline if it's from the currently selected user or from admin themselves
-        if (selectedUser?.id === msg.senderId || msg.senderId === user.id) {
-          setMessages(prev => [...prev, msg]);
+        const msgRoom = msg.room || `room_${msg.senderId}`;
+
+        setActiveUsers(prev => {
+          if (!prev.find(u => String(u.id || u._id) === String(msg.senderId))) {
+            return [...prev, { id: msg.senderId, username: msg.senderName, hasUnread: true }];
+          }
+          return prev;
+        });
+
+        const currentMsgs = loadMessagesFromLocal(msgRoom);
+        if (!currentMsgs.some(m => m.timestamp === msg.timestamp && m.text === msg.text && String(m.senderId) === String(msg.senderId))) {
+          const updated = [...currentMsgs, msg];
+          saveMessagesToLocal(msgRoom, updated);
+          
+          if (selectedUser && String(selectedUser.id || selectedUser._id) === String(msg.senderId)) {
+            setMessages(updated);
+          } else {
+            setActiveUsers(prev => prev.map(u => {
+              if (String(u.id || u._id) === String(msg.senderId)) {
+                return { ...u, hasUnread: true };
+              }
+              return u;
+            }));
+          }
         }
       } else {
-        // For standard user
-        setMessages(prev => [...prev, msg]);
+        if (String(msg.senderId) === String(user.id || user._id)) {
+          return; 
+        }
+        const msgRoom = msg.room || `room_${user.id || user._id}`;
+        const currentMsgs = loadMessagesFromLocal(msgRoom);
+        if (!currentMsgs.some(m => m.timestamp === msg.timestamp && m.text === msg.text && String(m.senderId) === String(msg.senderId))) {
+          const updated = [...currentMsgs, msg];
+          saveMessagesToLocal(msgRoom, updated);
+          setMessages(updated);
+        }
         if (!isOpen) {
           setUnreadCount(c => c + 1);
         }
@@ -62,13 +112,15 @@ const SupportChat = () => {
     return () => {
       socket.off('receive_message');
     };
-  }, [socket, user, isAdmin, selectedUser]);
+  }, [socket, user, isAdmin, selectedUser, isOpen]);
 
-  // When admin selects a different user, fetch or join that room
   useEffect(() => {
     if (isAdmin && selectedUser && socket) {
-      socket.emit('join_room', `room_${selectedUser.id}`);
-      setMessages([]); // Clear timeline for new chat session
+      const roomId = `room_${selectedUser.id || selectedUser._id}`;
+      socket.emit('join_room', roomId);
+      
+      const historical = loadMessagesFromLocal(roomId);
+      setMessages(historical);
     }
   }, [selectedUser, isAdmin, socket]);
 
@@ -78,12 +130,12 @@ const SupportChat = () => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!input.trim() || !socket) return;
+    if (!input.trim() || !socket || !user) return;
 
-    const roomId = isAdmin ? `room_${selectedUser?.id}` : `room_${user.id}`;
+    const roomId = isAdmin ? `room_${selectedUser?.id || selectedUser?._id}` : `room_${user.id || user._id}`;
     const messageData = {
       room: roomId,
-      senderId: user.id,
+      senderId: user.id || user._id,
       senderName: user.username,
       text: input.trim(),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -91,10 +143,10 @@ const SupportChat = () => {
 
     socket.emit('send_message', messageData);
     
-    // For admin, add message locally to own view immediately if selected
-    if (isAdmin) {
-      setMessages(prev => [...prev, messageData]);
-    }
+    const currentMsgs = loadMessagesFromLocal(roomId);
+    const updated = [...currentMsgs, messageData];
+    saveMessagesToLocal(roomId, updated);
+    setMessages(updated);
 
     setInput('');
   };
@@ -104,17 +156,21 @@ const SupportChat = () => {
     if (!isOpen) setUnreadCount(0);
   };
 
-  // Render Admin Chat Panel
+  if (!user || (user.role !== 'admin' && user.role !== 'member')) return null;
+
   if (isAdmin) {
+    const unreadActiveChatsCount = activeUsers.filter(u => u.hasUnread).length;
     return (
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
         {isOpen ? (
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-[600px] h-[450px] flex overflow-hidden animate-fade-in font-sans">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-[calc(100vw-2rem)] sm:w-[500px] md:w-[600px] h-[60vh] sm:h-[450px] flex overflow-hidden animate-fade-in font-sans">
             
-            {/* Active Users Sidebar */}
-            <div className="w-1/3 border-r border-gray-100 bg-gray-50/50 flex flex-col">
-              <div className="p-4 border-b border-gray-100 bg-[#1a237e] text-white">
+            <div className={`${selectedUser ? 'hidden sm:flex' : 'flex'} w-full sm:w-1/3 border-r border-gray-100 bg-gray-50/50 flex-col`}>
+              <div className="p-4 border-b border-gray-100 bg-[#1a237e] text-white flex justify-between items-center">
                 <h3 className="font-bold text-sm">Active Support Chats</h3>
+                <button onClick={toggleChat} className="text-white/80 hover:text-white text-lg cursor-pointer">
+                  ✕
+                </button>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
                 {activeUsers.length === 0 ? (
@@ -122,36 +178,55 @@ const SupportChat = () => {
                 ) : (
                   activeUsers.map(u => (
                     <button
-                      key={u.id}
-                      onClick={() => setSelectedUser(u)}
-                      className={`w-full text-left p-3 rounded-xl transition-colors flex items-center gap-2 ${
-                        selectedUser?.id === u.id 
+                      key={u.id || u._id}
+                      onClick={() => {
+                        setSelectedUser(u);
+                        setActiveUsers(prev => prev.map(userItem => {
+                          if (String(userItem.id || userItem._id) === String(u.id || u._id)) {
+                            return { ...userItem, hasUnread: false };
+                          }
+                          return userItem;
+                        }));
+                      }}
+                      className={`w-full text-left p-3 rounded-xl transition-colors flex items-center justify-between gap-2 ${
+                        selectedUser && String(selectedUser.id || selectedUser._id) === String(u.id || u._id)
                           ? 'bg-[#1a237e]/10 text-[#1a237e] font-bold' 
                           : 'hover:bg-gray-100 text-gray-600 text-sm'
                       }`}
                     >
-                      <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
-                      <span className="truncate">{u.username}</span>
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="w-2.5 h-2.5 bg-green-500 rounded-full shrink-0"></span>
+                        <span className="truncate">{u.username}</span>
+                      </div>
+                      {u.hasUnread && (
+                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                      )}
                     </button>
                   ))
                 )}
               </div>
             </div>
 
-            {/* Chat Timeline Panel */}
-            <div className="w-2/3 flex flex-col h-full">
+            <div className={`${selectedUser ? 'flex' : 'hidden sm:flex'} w-full sm:w-2/3 flex-col h-full`}>
               <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white shadow-xs">
-                <div>
-                  <h3 className="font-bold text-gray-800 text-sm">
+                <div className="flex items-center gap-2">
+                  {selectedUser && (
+                    <button 
+                      onClick={() => setSelectedUser(null)} 
+                      className="sm:hidden text-[#1a237e] hover:text-[#0d155e] font-bold text-sm mr-1 cursor-pointer flex items-center gap-0.5"
+                    >
+                      ← <span className="text-xs font-semibold">Chats</span>
+                    </button>
+                  )}
+                  <h3 className="font-bold text-gray-800 text-xs sm:text-sm truncate max-w-[120px] sm:max-w-[200px]">
                     {selectedUser ? `Chatting with ${selectedUser.username}` : 'Select a user to chat'}
                   </h3>
                 </div>
-                <button onClick={toggleChat} className="text-gray-400 hover:text-gray-600 text-lg">
+                <button onClick={toggleChat} className="text-gray-400 hover:text-gray-600 text-lg cursor-pointer">
                   ✕
                 </button>
               </div>
 
-              {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
                 {!selectedUser ? (
                   <div className="h-full flex flex-col items-center justify-center text-center space-y-2 text-gray-400">
@@ -162,7 +237,7 @@ const SupportChat = () => {
                   <p className="text-xs text-gray-400 text-center py-10">No messages yet. Send a greeting!</p>
                 ) : (
                   messages.map((msg, idx) => {
-                    const isSelf = msg.senderId === user.id;
+                    const isSelf = String(msg.senderId) === String(user.id || user._id);
                     return (
                       <div key={idx} className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'}`}>
                         <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-xs ${
@@ -180,7 +255,6 @@ const SupportChat = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input Form */}
               <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-100 flex gap-2 bg-white">
                 <input
                   type="text"
@@ -208,9 +282,9 @@ const SupportChat = () => {
           >
             <span className="text-xl">💬</span>
             <span className="text-sm font-bold pr-1">Librarian Support</span>
-            {activeUsers.length > 0 && (
+            {unreadActiveChatsCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center text-white border border-white">
-                {activeUsers.length}
+                {unreadActiveChatsCount}
               </span>
             )}
           </button>
@@ -219,13 +293,11 @@ const SupportChat = () => {
     );
   }
 
-  // Render Standard User Chat Widget
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {isOpen ? (
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-80 h-96 flex flex-col overflow-hidden animate-fade-in font-sans">
           
-          {/* Header */}
           <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-[#1a237e] text-white">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></span>
@@ -236,7 +308,6 @@ const SupportChat = () => {
             </button>
           </div>
 
-          {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-2 text-gray-400">
@@ -246,7 +317,7 @@ const SupportChat = () => {
               </div>
             ) : (
               messages.map((msg, idx) => {
-                const isSelf = msg.senderId === user.id;
+                const isSelf = String(msg.senderId) === String(user.id || user._id);
                 return (
                   <div key={idx} className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'}`}>
                     <div className={`max-w-[80%] px-3.5 py-2 rounded-2xl text-xs ${
@@ -264,7 +335,6 @@ const SupportChat = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Form */}
           <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-100 flex gap-2 bg-white">
             <input
               type="text"

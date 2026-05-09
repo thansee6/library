@@ -11,7 +11,6 @@ import Dashboard from './pages/Dashboard';
 import InventoryManagement from './pages/InventoryManagement';
 import UserManagement from './pages/UserManagement';
 import ActiveBorrows from './pages/ActiveBorrows';
-import ActivityLogs from './pages/ActivityLogs';
 import SystemSettings from './pages/SystemSettings';
 import MyBorrowings from './pages/MyBorrowings';
 import UserProfile from './pages/UserProfile';
@@ -168,10 +167,6 @@ function App() {
           <Route 
             path="/admin/borrows" 
             element={<ProtectedRoute roles={['admin']}><ActiveBorrows /></ProtectedRoute>} 
-          />
-          <Route 
-            path="/admin/logs" 
-            element={<ProtectedRoute roles={['admin']}><ActivityLogs /></ProtectedRoute>} 
           />
           <Route 
             path="/admin/settings" 

@@ -41,14 +41,16 @@ const InventoryManagement = () => {
     }
   };
 
-  const fetchAuthors = async () => {
+  const fetchAuthors = async (force = false) => {
+    if (authors.length > 0 && !force) return;
     try {
       const { data } = await API.get('/authors');
       setAuthors(data.data);
     } catch (err) {}
   };
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (force = false) => {
+    if (categories.length > 0 && !force) return;
     try {
       const { data } = await API.get('/categories');
       setCategories(data.data);
@@ -61,6 +63,8 @@ const InventoryManagement = () => {
       const endpoint = activeTab === 'books' ? '/books' : activeTab === 'authors' ? '/authors' : '/categories';
       await API.delete(`${endpoint}/${id}`);
       fetchData();
+      if (activeTab === 'authors') fetchAuthors(true);
+      if (activeTab === 'categories') fetchCategories(true);
     } catch (err) {
       alert('Failed to delete item');
     }
@@ -84,11 +88,12 @@ const InventoryManagement = () => {
       
       let payload = formData;
       
-      // If it's a book and a file is selected, use FormData
       if (activeTab === 'books' && selectedFile) {
         payload = new FormData();
         Object.keys(formData).forEach(key => {
-          payload.append(key, formData[key]);
+          if (typeof formData[key] !== 'object' || formData[key] === null) {
+            payload.append(key, formData[key]);
+          }
         });
         payload.append('coverImage', selectedFile);
       }
@@ -100,6 +105,8 @@ const InventoryManagement = () => {
       }
       setIsModalOpen(false);
       fetchData();
+      if (activeTab === 'authors') fetchAuthors(true);
+      if (activeTab === 'categories') fetchCategories(true);
     } catch (err) {
       alert('Operation failed: ' + (err.response?.data?.message || err.message));
     }
@@ -212,73 +219,106 @@ const InventoryManagement = () => {
 
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl">
-            <h2 className="text-2xl font-bold text-[#1a237e] mb-6">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl w-full max-w-md p-5 shadow-2xl">
+            <h2 className="text-xl font-bold text-[#1a237e] mb-4">
               {editingItem ? 'Edit' : 'Add New'} {activeTab.slice(0, -1)}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               {activeTab === 'books' ? (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Title</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Title</label>
                     <input 
                       required
-                      className="w-full p-2 border rounded-lg"
+                      className="w-full p-1.5 border rounded-lg text-sm"
                       value={formData.title || ''}
                       onChange={e => setFormData({...formData, title: e.target.value})}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium mb-1">ISBN</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">ISBN</label>
                       <input 
                         required
-                        className="w-full p-2 border rounded-lg"
+                        className="w-full p-1.5 border rounded-lg text-sm"
                         value={formData.isbn || ''}
                         onChange={e => setFormData({...formData, isbn: e.target.value})}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Stock</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Stock</label>
                       <input 
                         type="number"
-                        className="w-full p-2 border rounded-lg"
+                        className="w-full p-1.5 border rounded-lg text-sm"
                         value={formData.stock || 0}
                         onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})}
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Author</label>
-                    <select 
-                      required
-                      className="w-full p-2 border rounded-lg"
-                      value={formData.authorId || ''}
-                      onChange={e => setFormData({...formData, authorId: e.target.value})}
-                    >
-                      <option value="">Select Author</option>
-                      {authors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                    </select>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Author</label>
+                      <select 
+                        required
+                        className="w-full p-1.5 border rounded-lg text-sm bg-white"
+                        value={formData.authorId || ''}
+                        onChange={e => setFormData({...formData, authorId: e.target.value})}
+                      >
+                        <option value="">Select Author</option>
+                        {authors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Category</label>
+                      <select 
+                        required
+                        className="w-full p-1.5 border rounded-lg text-sm bg-white"
+                        value={formData.categoryId || ''}
+                        onChange={e => setFormData({...formData, categoryId: e.target.value})}
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Category</label>
-                    <select 
-                      required
-                      className="w-full p-2 border rounded-lg"
-                      value={formData.categoryId || ''}
-                      onChange={e => setFormData({...formData, categoryId: e.target.value})}
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Description</label>
+                    <textarea 
+                      className="w-full p-1.5 border rounded-lg h-16 text-sm"
+                      placeholder="Enter a brief summary..."
+                      value={formData.description || ''}
+                      onChange={e => setFormData({...formData, description: e.target.value})}
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Cover Image</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Cover Image</label>
+                    <div className="flex items-center gap-3 p-1.5 bg-gray-50/50 rounded-lg border border-gray-100 mb-2">
+                      <div className="w-8 h-11 bg-gray-100 border border-gray-200 rounded flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                        {selectedFile ? (
+                          <img 
+                            src={URL.createObjectURL(selectedFile)} 
+                            alt="Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : formData.coverImage ? (
+                          <img 
+                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${formData.coverImage}`} 
+                            alt="Current Cover" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xl text-gray-300">📖</span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-gray-400 truncate max-w-[240px]">
+                        {selectedFile ? 'New cover ready' : formData.coverImage ? 'Original cover active' : 'No cover uploaded yet'}
+                      </div>
+                    </div>
                     <input 
                       type="file"
                       accept="image/*"
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      className="w-full text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                       onChange={e => setSelectedFile(e.target.files[0])}
                     />
                   </div>
@@ -286,20 +326,20 @@ const InventoryManagement = () => {
               ) : (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
                     <input 
                       required
-                      className="w-full p-2 border rounded-lg"
+                      className="w-full p-1.5 border rounded-lg text-sm"
                       value={formData.name || ''}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">
                       {activeTab === 'authors' ? 'Biography' : 'Description'}
                     </label>
                     <textarea 
-                      className="w-full p-2 border rounded-lg h-32"
+                      className="w-full p-1.5 border rounded-lg h-24 text-sm"
                       value={activeTab === 'authors' ? formData.biography || '' : formData.description || ''}
                       onChange={e => setFormData({
                         ...formData, 
@@ -310,17 +350,17 @@ const InventoryManagement = () => {
                 </>
               )}
               
-              <div className="flex gap-4 mt-8">
+              <div className="flex gap-3 pt-3 border-t border-gray-50">
                 <button 
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-4 py-1.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-[#1a237e] text-white rounded-lg font-bold"
+                  className="flex-1 px-4 py-1.5 bg-[#1a237e] text-white rounded-lg text-sm font-bold hover:bg-[#0d155e] transition-colors"
                 >
                   Save
                 </button>

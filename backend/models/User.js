@@ -35,6 +35,14 @@ const User = sequelize.define('User', {
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  subscriptionStatus: {
+    type: DataTypes.ENUM('active', 'inactive', 'overdue'),
+    defaultValue: 'inactive'
+  },
+  subscriptionExpiresAt: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
   hooks: {

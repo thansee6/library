@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 const getDashboardStats = async (req, res) => {
   try {
     const totalBooks = await Book.count();
-    const activeUsers = await User.count(); // Count all users (or filter if specific definition)
+    const activeUsers = await User.count(); 
     const totalBorrows = await Borrowing.count();
     const overdueBooks = await Borrowing.count({
       where: {

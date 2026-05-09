@@ -55,6 +55,8 @@ app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/borrowings', require('./routes/borrowingRoutes'));
 app.use('/api/stats', require('./routes/statsRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/settings', require('./routes/systemSettingRoutes'));
+app.use('/api/subscription', require('./routes/subscriptionRoutes'));
 
 app.get('/', (req, res) => {
   res.send('Library API is running...');
@@ -96,7 +98,7 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ alter: true });
     
     server.listen(PORT, () => {
       console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

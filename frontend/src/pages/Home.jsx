@@ -8,7 +8,6 @@ const Home = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Define all state and effect hooks at the very top level
   const [borrowings, setBorrowings] = useState([]);
   const [recommendedBooks, setRecommendedBooks] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -23,19 +22,18 @@ const Home = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch borrowings
+        
         const borrowRes = await API.get('/borrowings/history');
         setBorrowings(borrowRes.data);
 
-        // Fetch recommended/latest books
         const booksRes = await API.get('/books', { params: { limit: 4 } });
         setRecommendedBooks(booksRes.data.data);
 
-        // Fetch categories for filterable search
+       
         const catRes = await API.get('/categories');
         setCategories(catRes.data.data);
 
-        // Get favorites count
+       
         const stored = localStorage.getItem('favorites');
         if (stored) {
           setFavoritesCount(JSON.parse(stored).length);
@@ -50,12 +48,11 @@ const Home = () => {
     fetchData();
   }, [user]);
 
-  // Redirect admin users to their dashboard
+  
   if (user && user.role === 'admin') {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
-  // If not logged in, show the original beautiful landing page
   if (!user) {
     return (
       <div className="min-h-screen bg-[#f0f2f5] font-sans flex items-center justify-center p-4 sm:p-8">
@@ -120,7 +117,7 @@ const Home = () => {
     <div className="min-h-screen bg-[#f4f6fa] font-sans py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Filterable Search like Book Catalog */}
+        
         <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
