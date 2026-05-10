@@ -35,7 +35,7 @@ services:
       - key: JWT_EXPIRE
         value: 24h
       - key: FRONTEND_URL
-        value: https://library-frontend.onrender.com
+        value: https://library-frontend-9qxj.onrender.com
 
   # ── Frontend (Static Site) ──
   - type: web
@@ -50,7 +50,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://library-api.onrender.com
+        value: https://library-api-05iq.onrender.com
 
 # ── PostgreSQL Database ──
 databases:
