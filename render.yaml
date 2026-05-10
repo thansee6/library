@@ -1,0 +1,61 @@
+services:
+  # ── Backend API ──
+  - type: web
+    name: library-api
+    runtime: node
+    region: oregon
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: node index.js
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_HOST
+        fromDatabase:
+          name: library-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: library-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: library-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: library-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: library-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 24h
+      - key: FRONTEND_URL
+        value: https://library-frontend.onrender.com
+
+  # ── Frontend (Static Site) ──
+  - type: web
+    name: library-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://library-api.onrender.com
+
+# ── PostgreSQL Database ──
+databases:
+  - name: library-db
+    plan: free
+    region: oregon
