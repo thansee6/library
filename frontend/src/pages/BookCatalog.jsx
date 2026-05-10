@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import API from '../utils/api';
 
@@ -21,7 +21,7 @@ const BookCatalog = () => {
     }
   }, []);
 
-  const toggleFavorite = (book) => {
+  const toggleFavorite = useCallback((book) => {
     let updated;
     if (favorites.some(f => f.id === book.id)) {
       updated = favorites.filter(f => f.id !== book.id);
@@ -30,22 +30,22 @@ const BookCatalog = () => {
     }
     setFavorites(updated);
     localStorage.setItem('favorites', JSON.stringify(updated));
-  };
+  }, [favorites]);
 
   useEffect(() => {
     fetchBooks();
   }, [search, category, page]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const { data } = await API.get('/categories');
       setCategories(data.data);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }
-  };
+  }, []);
 
-  const fetchBooks = async () => {
+  const fetchBooks = useCallback(async () => {
     setLoading(true);
     try {
       const { data } = await API.get('/books', {
@@ -63,7 +63,7 @@ const BookCatalog = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, category, page]);
 
   return (
     <div className="min-h-screen bg-[#f7f8fc] font-sans pb-12">

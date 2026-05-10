@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import API from '../utils/api';
 import AdminLayout from '../components/AdminLayout';
 
@@ -26,7 +26,7 @@ const InventoryManagement = () => {
     }
   }, [activeTab]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -39,25 +39,25 @@ const InventoryManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
 
-  const fetchAuthors = async (force = false) => {
+  const fetchAuthors = useCallback(async (force = false) => {
     if (authors.length > 0 && !force) return;
     try {
       const { data } = await API.get('/authors');
       setAuthors(data.data);
     } catch (err) {}
-  };
+  }, [authors.length]);
 
-  const fetchCategories = async (force = false) => {
+  const fetchCategories = useCallback(async (force = false) => {
     if (categories.length > 0 && !force) return;
     try {
       const { data } = await API.get('/categories');
       setCategories(data.data);
     } catch (err) {}
-  };
+  }, [categories.length]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
     try {
       const endpoint = activeTab === 'books' ? '/books' : activeTab === 'authors' ? '/authors' : '/categories';
@@ -68,9 +68,9 @@ const InventoryManagement = () => {
     } catch (err) {
       alert('Failed to delete item');
     }
-  };
+  }, [activeTab, fetchData, fetchAuthors, fetchCategories]);
 
-  const handleOpenModal = (item = null) => {
+  const handleOpenModal = useCallback((item = null) => {
     setEditingItem(item);
     setSelectedFile(null);
     if (item) {
@@ -79,9 +79,9 @@ const InventoryManagement = () => {
       setFormData(activeTab === 'books' ? { title: '', isbn: '', authorId: '', categoryId: '', stock: 0 } : { name: '' });
     }
     setIsModalOpen(true);
-  };
+  }, [activeTab]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     try {
       const endpoint = activeTab === 'books' ? '/books' : activeTab === 'authors' ? '/authors' : '/categories';
@@ -110,7 +110,7 @@ const InventoryManagement = () => {
     } catch (err) {
       alert('Operation failed: ' + (err.response?.data?.message || err.message));
     }
-  };
+  }, [activeTab, formData, selectedFile, editingItem, fetchData, fetchAuthors, fetchCategories]);
 
   return (
     <AdminLayout title="Inventory Management">

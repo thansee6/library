@@ -356,6 +356,7 @@ exports.adminGiveFreeSubscription = async (req, res) => {
       amount: 0,
       currency: 'INR',
       status: 'completed',
+      razorpayOrderId: `grant_order_${Date.now()}`,
       razorpayPaymentId: `free_grant_${Date.now()}`,
       invoiceNumber: `GRANT-${Date.now()}`
     });

@@ -39,7 +39,10 @@ const Payment = sequelize.define('Payment', {
   timestamps: true,
   indexes: [
     { fields: ['userId'] },
-    { fields: ['status'] }
+    { fields: ['status'] },
+    { fields: ['userId', 'status'] },              // Composite: faster billing history filtering
+    { fields: ['userId', 'createdAt'] },            // Composite: faster payment receipt queries
+    { fields: ['status', 'createdAt'] }             // Composite: faster cron job receipt lookups
   ]
 });
 

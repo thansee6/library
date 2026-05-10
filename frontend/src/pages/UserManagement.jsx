@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import API from '../utils/api';
 
@@ -15,7 +15,7 @@ const UserManagement = () => {
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const [fetchingBilling, setFetchingBilling] = useState(false);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const { data } = await API.get('/users');
       setUsers(data.data);
@@ -24,22 +24,22 @@ const UserManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
-  const toggleUserStatus = async (id, currentStatus) => {
+  const toggleUserStatus = useCallback(async (id, currentStatus) => {
     try {
       await API.put(`/users/${id}/status`, { isActive: !currentStatus });
       fetchUsers();
     } catch (err) {
       alert('Failed to update user status');
     }
-  };
+  }, [fetchUsers]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (!window.confirm('Are you sure you want to permanently delete this user?')) return;
     try {
       await API.delete(`/users/${id}`);
@@ -47,9 +47,9 @@ const UserManagement = () => {
     } catch (err) {
       alert('Failed to delete user');
     }
-  };
+  }, [fetchUsers]);
 
-  const handleCancelSubscription = async (id) => {
+  const handleCancelSubscription = useCallback(async (id) => {
     if (!window.confirm("Are you sure you want to cancel this user's subscription?")) return;
     try {
       await API.post(`/subscription/admin/cancel/${id}`);
@@ -58,9 +58,9 @@ const UserManagement = () => {
     } catch (err) {
       alert('Failed to cancel subscription: ' + (err.response?.data?.message || err.message));
     }
-  };
+  }, [fetchUsers]);
 
-  const handleGiveFreeSubscription = async (id) => {
+  const handleGiveFreeSubscription = useCallback(async (id) => {
     if (!window.confirm('Are you sure you want to grant a free 30-day subscription to this user?')) return;
     try {
       await API.post(`/subscription/admin/free/${id}`);
@@ -69,9 +69,9 @@ const UserManagement = () => {
     } catch (err) {
       alert('Failed to grant free subscription: ' + (err.response?.data?.message || err.message));
     }
-  };
+  }, [fetchUsers]);
 
-  const openBillingModal = async (user) => {
+  const openBillingModal = useCallback(async (user) => {
     setSelectedUserForBilling(user);
     setIsBillingModalOpen(true);
     setFetchingBilling(true);
@@ -84,9 +84,9 @@ const UserManagement = () => {
     } finally {
       setFetchingBilling(false);
     }
-  };
+  }, []);
 
-  const deleteUserPaymentRecord = async (paymentId) => {
+  const deleteUserPaymentRecord = useCallback(async (paymentId) => {
     if (!window.confirm('Are you sure you want to permanently delete this transaction log?')) return;
     try {
       await API.delete(`/subscription/admin/payment/${paymentId}`);
@@ -99,15 +99,15 @@ const UserManagement = () => {
     } catch (err) {
       alert('Failed to delete transaction log');
     }
-  };
+  }, [selectedUserForBilling, fetchUsers]);
 
-  const openEditModal = (user) => {
+  const openEditModal = useCallback((user) => {
     setEditingUser(user);
     setFormData({ username: user.username, email: user.email, role: user.role });
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleUpdate = async (e) => {
+  const handleUpdate = useCallback(async (e) => {
     e.preventDefault();
     try {
       await API.put(`/users/${editingUser.id}`, formData);
@@ -117,7 +117,7 @@ const UserManagement = () => {
     } catch (err) {
       alert('Failed to update user: ' + (err.response?.data?.message || err.message));
     }
-  };
+  }, [editingUser, formData, fetchUsers]);
 
   return (
     <AdminLayout title="User Management">

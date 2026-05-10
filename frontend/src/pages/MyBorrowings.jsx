@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import API from '../utils/api';
 import { Link } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ const MyBorrowings = () => {
     fetchBorrowings();
   }, []);
 
-  const fetchBorrowings = async () => {
+  const fetchBorrowings = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await API.get('/borrowings/history');
@@ -22,17 +22,17 @@ const MyBorrowings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleReturn = async (id) => {
+  const handleReturn = useCallback(async (id) => {
     try {
       await API.post(`/borrowings/return/${id}`);
-      setBorrowings(borrowings.map(b => b.id === id ? { ...b, status: 'returned', returnDate: new Date().toISOString() } : b));
+      setBorrowings(prev => prev.map(b => b.id === id ? { ...b, status: 'returned', returnDate: new Date().toISOString() } : b));
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Failed to return book');
     }
-  };
+  }, []);
 
   if (loading) {
     return (

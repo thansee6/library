@@ -58,7 +58,12 @@ const User = sequelize.define('User', {
         user.password = await bcrypt.hash(user.password, salt);
       }
     }
-  }
+  },
+  indexes: [
+    { fields: ['email'], unique: true },
+    { fields: ['subscriptionStatus'] },
+    { fields: ['subscriptionStatus', 'subscriptionExpiresAt'] }  // Composite: faster cron subscription lookups
+  ]
 });
 
 User.prototype.comparePassword = async function(candidatePassword) {

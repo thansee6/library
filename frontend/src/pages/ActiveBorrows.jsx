@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import API from '../utils/api';
 
@@ -9,7 +9,7 @@ const ActiveBorrows = () => {
   const [bookSearch, setBookSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const fetchBorrowings = async () => {
+  const fetchBorrowings = useCallback(async () => {
     try {
       const { data } = await API.get('/borrowings/all');
       setBorrowings(data);
@@ -18,13 +18,13 @@ const ActiveBorrows = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchBorrowings();
-  }, []);
+  }, [fetchBorrowings]);
 
-  const handleClearBorrowing = async (id) => {
+  const handleClearBorrowing = useCallback(async (id) => {
     if (!window.confirm('Are you sure you want to clear this active borrow? This will mark the book as returned and update the available stock.')) return;
     try {
       await API.post(`/borrowings/clear/${id}`);
@@ -32,9 +32,9 @@ const ActiveBorrows = () => {
     } catch (err) {
       alert('Failed to clear borrowing: ' + (err.response?.data?.message || err.message));
     }
-  };
+  }, [fetchBorrowings]);
 
-  const handleDeleteBorrowing = async (id) => {
+  const handleDeleteBorrowing = useCallback(async (id) => {
     if (!window.confirm('Are you sure you want to PERMANENTLY delete this borrowing record? This will also restore the book stock if it is currently borrowed.')) return;
     try {
       await API.delete(`/borrowings/${id}`);
@@ -42,15 +42,15 @@ const ActiveBorrows = () => {
     } catch (err) {
       alert('Failed to delete borrowing: ' + (err.response?.data?.message || err.message));
     }
-  };
+  }, [fetchBorrowings]);
 
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString();
-  };
+  }, []);
 
   // Filter logic
-  const filteredBorrowings = borrowings.filter(borrow => {
+  const filteredBorrowings = useMemo(() => borrowings.filter(borrow => {
     const matchesUser = userSearch === '' || 
       borrow.user?.username?.toLowerCase().includes(userSearch.toLowerCase()) ||
       borrow.user?.email?.toLowerCase().includes(userSearch.toLowerCase());
@@ -62,7 +62,7 @@ const ActiveBorrows = () => {
     const matchesStatus = statusFilter === 'all' || borrow.status === statusFilter;
     
     return matchesUser && matchesBook && matchesStatus;
-  });
+  }), [borrowings, userSearch, bookSearch, statusFilter]);
 
   return (
     <AdminLayout title="Active Borrows">

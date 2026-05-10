@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -62,24 +62,40 @@ const GlobalNotifications = () => {
       }
     };
 
+    const handleSubExpiring = (data) => {
+      if (data.userId === (user.id || user._id)) {
+        addNotification(`⚠️ Your subscription expires in ${data.daysLeft} day${data.daysLeft > 1 ? 's' : ''}. Renew now!`);
+      }
+    };
+
+    const handleSubExpired = (data) => {
+      if (data.userId === (user.id || user._id)) {
+        addNotification(`❌ Your subscription has expired. Renew to continue borrowing.`);
+      }
+    };
+
     socket.on('book_borrowed', handleBorrowed);
     socket.on('book_returned', handleReturned);
     socket.on('book_overdue', handleOverdue);
+    socket.on('subscription_expiring', handleSubExpiring);
+    socket.on('subscription_expired', handleSubExpired);
 
     return () => {
       socket.off('book_borrowed', handleBorrowed);
       socket.off('book_returned', handleReturned);
       socket.off('book_overdue', handleOverdue);
+      socket.off('subscription_expiring', handleSubExpiring);
+      socket.off('subscription_expired', handleSubExpired);
     };
   }, [socket, user]);
 
-  const addNotification = (msg) => {
+  const addNotification = useCallback((msg) => {
     const id = Date.now();
     setNotifications((prev) => [...prev, { id, msg }]);
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     }, 5000);
-  };
+  }, []);
 
   if (notifications.length === 0) return null;
 
