@@ -17,7 +17,6 @@ const UserProfile = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Subscription related states
   const [subStatus, setSubStatus] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [fetchingSub, setFetchingSub] = useState(false);
@@ -228,7 +227,6 @@ const UserProfile = () => {
     try {
       await API.delete(`/subscription/admin/payment/${paymentId}`);
       alert('Transaction record deleted successfully.');
-      // Refresh billing history
       const fetchHistory = async () => {
         try {
           const { data } = await API.get('/subscription/history');

@@ -1,8 +1,4 @@
-/**
- * Export local library_db data as a seed script that can run on Render.
- * Run: node scripts/exportSeed.js
- * Output: scripts/seed.js (ready to run on Render shell)
- */
+
 const { sequelize, User, Book, Author, Category, Borrowing, Payment, SystemSetting } = require('../models');
 
 const exportData = async () => {
@@ -10,7 +6,7 @@ const exportData = async () => {
     await sequelize.authenticate();
     console.log('Connected to local database');
 
-    // Fetch all data
+   
     const users = await User.findAll({ raw: true });
     const authors = await Author.findAll({ raw: true });
     const categories = await Category.findAll({ raw: true });
@@ -25,7 +21,7 @@ const exportData = async () => {
       console.log('No SystemSettings table, skipping...');
     }
 
-    // Generate seed script
+    
     const seedScript = `
 const { sequelize, User, Book, Author, Category, Borrowing, Payment, SystemSetting } = require('../models');
 const bcrypt = require('bcryptjs');
@@ -58,7 +54,7 @@ const seed = async () => {
       id: u.id,
       username: u.username,
       email: u.email,
-      password: u.password,  // Already hashed
+      password: u.password,  
       role: u.role,
       isActive: u.isActive,
       subscriptionStatus: u.subscriptionStatus,

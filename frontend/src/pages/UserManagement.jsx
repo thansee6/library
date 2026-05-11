@@ -9,7 +9,6 @@ const UserManagement = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({ username: '', email: '', role: 'member' });
 
-  // Administrative user billing history states
   const [selectedUserForBilling, setSelectedUserForBilling] = useState(null);
   const [userBillingHistory, setUserBillingHistory] = useState([]);
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
@@ -91,10 +90,8 @@ const UserManagement = () => {
     try {
       await API.delete(`/subscription/admin/payment/${paymentId}`);
       alert('Transaction log deleted successfully.');
-      // Refresh list
       const { data } = await API.get(`/subscription/history?userId=${selectedUserForBilling.id}`);
       setUserBillingHistory(data);
-      // Refresh main table
       fetchUsers();
     } catch (err) {
       alert('Failed to delete transaction log');

@@ -15,8 +15,7 @@ const ForgotPassword = () => {
       return;
     }
 
-    // Password reset requires SMTP email configuration.
-    // Show a confirmation message directing the user to contact support.
+    
     setSubmitted(true);
   };
 

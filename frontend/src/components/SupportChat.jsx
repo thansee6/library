@@ -56,11 +56,11 @@ const SupportChat = () => {
   useEffect(() => {
     if (!socket || !user) return;
 
-    // Standard User joins their own private room
+
     if (!isAdmin) {
       socket.emit('join_room', `room_${user.id || user._id}`);
     } else {
-      // Admin joins general admin support room to listen for initial joins
+      
       socket.emit('join_room', 'admin_support');
     }
 
@@ -87,7 +87,7 @@ const SupportChat = () => {
           if (selectedUser && String(selectedUser.id || selectedUser._id) === String(msg.senderId)) {
             setMessages(updated);
           } else {
-            // It's from another user, mark them as unread in the sidebar
+            
             setActiveUsers(prev => prev.map(u => {
               if (String(u.id || u._id) === String(msg.senderId)) {
                 return { ...u, hasUnread: true };

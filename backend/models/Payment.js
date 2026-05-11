@@ -12,7 +12,7 @@ const Payment = sequelize.define('Payment', {
     allowNull: false
   },
   amount: {
-    type: DataTypes.INTEGER, // amount in rupees
+    type: DataTypes.INTEGER, 
     allowNull: false
   },
   currency: {
@@ -40,9 +40,9 @@ const Payment = sequelize.define('Payment', {
   indexes: [
     { fields: ['userId'] },
     { fields: ['status'] },
-    { fields: ['userId', 'status'] },              // Composite: faster billing history filtering
-    { fields: ['userId', 'createdAt'] },            // Composite: faster payment receipt queries
-    { fields: ['status', 'createdAt'] }             // Composite: faster cron job receipt lookups
+    { fields: ['userId', 'status'] },              
+    { fields: ['userId', 'createdAt'] },            
+    { fields: ['status', 'createdAt'] }             
   ]
 });
 

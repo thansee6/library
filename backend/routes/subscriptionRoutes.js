@@ -18,7 +18,7 @@ router.get('/status', protect, getSubscriptionStatus);
 router.get('/history', protect, getPaymentHistory);
 router.get('/invoice/:paymentId', protect, getInvoice);
 
-// Admin-Only Routes
+
 router.delete('/admin/payment/:paymentId', protect, authorize('admin'), adminDeletePayment);
 router.post('/admin/cancel/:userId', protect, authorize('admin'), adminCancelSubscription);
 router.post('/admin/free/:userId', protect, authorize('admin'), adminGiveFreeSubscription);

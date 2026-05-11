@@ -3,7 +3,7 @@ const Razorpay = require('razorpay');
 const nodemailer = require('nodemailer');
 const { Payment, User } = require('../models');
 
-// Initialize Razorpay
+
 const rzpKeyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_mockKeyId12345';
 const rzpKeySecret = process.env.RAZORPAY_KEY_SECRET || 'mockSecret12345';
 
@@ -12,7 +12,6 @@ const razorpay = new Razorpay({
   key_secret: rzpKeySecret
 });
 
-// Configure Nodemailer transporter (for emails/invoices)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.ethereal.email',
   port: process.env.SMTP_PORT || 587,
@@ -22,7 +21,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Helper to send invoice email
 const sendInvoiceEmail = async (user, payment, invoiceText) => {
   if (!user.email) return;
   try {
@@ -34,7 +32,6 @@ const sendInvoiceEmail = async (user, payment, invoiceText) => {
       html: `<pre style="font-family: monospace; padding: 20px; background: #f4f6f9; border-radius: 8px;">${invoiceText}</pre>`
     };
 
-    // If SMTP user is provided, send email; otherwise, log it to the console
     if (process.env.SMTP_USER) {
       await transporter.sendMail(mailOptions);
       console.log(`Invoice email sent to ${user.email}`);
@@ -50,7 +47,6 @@ const sendInvoiceEmail = async (user, payment, invoiceText) => {
   }
 };
 
-// Generate an invoice text
 const generateInvoiceText = (user, payment) => {
   return `
 =========================================
@@ -82,7 +78,6 @@ Your library access has been renewed.
 `;
 };
 
-// 1. Create a Razorpay Order
 exports.createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -99,7 +94,6 @@ exports.createOrder = async (req, res) => {
     let isMock = false;
 
     if (rzpKeyId.startsWith('rzp_test_mockKeyId')) {
-      // Mock order creation for developer flow
       isMock = true;
       order = {
         id: `order_mock_${Math.random().toString(36).substr(2, 9)}`,
@@ -122,7 +116,6 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // Save pending payment record
     const payment = await Payment.create({
       userId,
       amount: amountInRupees,
@@ -146,7 +139,6 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// 2. Verify Payment
 exports.verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, paymentId, isMock } = req.body;
@@ -177,16 +169,13 @@ exports.verifyPayment = async (req, res) => {
       return res.status(400).json({ message: 'Payment verification failed' });
     }
 
-    // Update payment record
     payment.status = 'completed';
     payment.razorpayPaymentId = razorpay_payment_id || `pay_mock_${Math.random().toString(36).substr(2, 9)}`;
     await payment.save();
 
-    // Update user subscription
     const user = await User.findByPk(userId);
     if (user) {
       let expiryDate = user.subscriptionExpiresAt ? new Date(user.subscriptionExpiresAt) : new Date();
-      // If subscription has already expired, start 30 days from now. Otherwise, add 30 days to existing expiry date.
       if (expiryDate < new Date()) {
         expiryDate = new Date();
       }
@@ -196,7 +185,6 @@ exports.verifyPayment = async (req, res) => {
       user.subscriptionExpiresAt = expiryDate;
       await user.save();
 
-      // Send invoice email asynchronously
       const invoiceText = generateInvoiceText(user, payment);
       sendInvoiceEmail(user, payment, invoiceText);
     }
@@ -211,7 +199,6 @@ exports.verifyPayment = async (req, res) => {
   }
 };
 
-// 3. Get Subscription Status
 exports.getSubscriptionStatus = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
@@ -219,7 +206,6 @@ exports.getSubscriptionStatus = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // trial checking: 15 days from user registration
     const trialDaysLimit = 15;
     const createdAtTime = new Date(user.createdAt).getTime();
     const currentTime = new Date().getTime();
@@ -255,12 +241,10 @@ exports.getSubscriptionStatus = async (req, res) => {
   }
 };
 
-// 4. Get Payment History
 exports.getPaymentHistory = async (req, res) => {
   try {
     let targetUserId = req.user.id;
 
-    // If requester is an admin and a specific userId is passed in query, fetch for that user instead!
     if (req.user.role === 'admin' && req.query.userId) {
       targetUserId = req.query.userId;
     }
@@ -276,7 +260,6 @@ exports.getPaymentHistory = async (req, res) => {
   }
 };
 
-// 5. Get Invoice Download / Receipt Plain Text
 exports.getInvoice = async (req, res) => {
   try {
     const payment = await Payment.findByPk(req.params.paymentId);
@@ -300,7 +283,6 @@ exports.getInvoice = async (req, res) => {
   }
 };
 
-// 6. Admin: Delete previous subscription (payment record)
 exports.adminDeletePayment = async (req, res) => {
   try {
     const payment = await Payment.findByPk(req.params.paymentId);
@@ -316,7 +298,6 @@ exports.adminDeletePayment = async (req, res) => {
   }
 };
 
-// 7. Admin: Cancel current subscription for a user
 exports.adminCancelSubscription = async (req, res) => {
   try {
     const user = await User.findByPk(req.params.userId);
@@ -335,7 +316,6 @@ exports.adminCancelSubscription = async (req, res) => {
   }
 };
 
-// 8. Admin: Give free active subscription to a user
 exports.adminGiveFreeSubscription = async (req, res) => {
   try {
     const user = await User.findByPk(req.params.userId);
@@ -350,7 +330,6 @@ exports.adminGiveFreeSubscription = async (req, res) => {
     user.subscriptionExpiresAt = expiryDate;
     await user.save();
 
-    // Create a completed ₹0 payment record to track this in their billing history!
     await Payment.create({
       userId: user.id,
       amount: 0,

@@ -6,7 +6,7 @@ const borrowBook = async (req, res) => {
     const { bookId } = req.body;
     const userId = req.user.id;
 
-    // Subscription status validation
+   
     if (req.user.role !== 'admin') {
       const trialDaysLimit = 15;
       const createdAtTime = new Date(req.user.createdAt).getTime();
@@ -228,7 +228,7 @@ const deleteBorrowing = async (req, res) => {
       return res.status(404).json({ message: 'Borrowing record not found' });
     }
 
-    // If deleting an active (unreturned) borrowing, restore the book's available stock
+    
     if (borrowing.status !== 'returned') {
       const book = await Book.findByPk(borrowing.bookId);
       if (book) {

@@ -49,7 +49,7 @@ const ActiveBorrows = () => {
     return new Date(dateString).toLocaleDateString();
   }, []);
 
-  // Filter logic
+
   const filteredBorrowings = useMemo(() => borrowings.filter(borrow => {
     const matchesUser = userSearch === '' || 
       borrow.user?.username?.toLowerCase().includes(userSearch.toLowerCase()) ||

@@ -17,7 +17,7 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (!user || user.role === 'admin') return; // Don't fetch if not standard user
+    if (!user || user.role === 'admin') return; 
 
     const fetchData = async () => {
       try {
@@ -85,7 +85,7 @@ const Home = () => {
     if (!window.confirm('Are you sure you want to return this book?')) return;
     try {
       await API.post(`/borrowings/return/${id}`);
-      // Refresh list
+      
       const borrowRes = await API.get('/borrowings/history');
       setBorrowings(borrowRes.data);
     } catch (err) {
