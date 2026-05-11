@@ -2,6 +2,7 @@ services:
   # ── Backend API ──
   - type: web
     name: library-api
+    plan: free
     runtime: node
     region: oregon
     rootDir: backend
@@ -55,4 +56,5 @@ services:
 # ── PostgreSQL Database ──
 databases:
   - name: library-db
+    plan: free
     region: oregon
