@@ -12,13 +12,13 @@ const createAdmin = async () => {
 
     await User.create({
       username: 'admin',
-      email: 'admin@example.com',
+      email: 'admin@admin.com',
       password: 'password123',
       role: 'admin'
     });
 
     console.log('Admin user created successfully!');
-    console.log('Email: admin@example.com');
+    console.log('Email: admin@admin.com');
     console.log('Password: password123');
     process.exit(0);
   } catch (err) {
