@@ -9,11 +9,13 @@ const {
   getInvoice,
   adminDeletePayment,
   adminCancelSubscription,
-  adminGiveFreeSubscription
+  adminGiveFreeSubscription,
+  handleWebhook
 } = require('../controllers/subscriptionController');
 
 router.post('/create-order', protect, createOrder);
 router.post('/verify-payment', protect, verifyPayment);
+router.post('/webhook', handleWebhook);
 router.get('/status', protect, getSubscriptionStatus);
 router.get('/history', protect, getPaymentHistory);
 router.get('/invoice/:paymentId', protect, getInvoice);

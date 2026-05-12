@@ -115,19 +115,9 @@ const UserProfile = () => {
     try {
       const { data } = await API.post('/subscription/create-order');
       
-      if (data.isMock) {
-        // Trigger simulated payment flow modal
-        setMockPaymentData(data);
-        setShowMockModal(true);
-        setPaymentProcessing(false);
-        return;
-      }
-
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
-        // Fallback to simulation if script fails to load
-        setMockPaymentData(data);
-        setShowMockModal(true);
+        setError('Failed to load payment gateway SDK. Please check your internet connection.');
         setPaymentProcessing(false);
         return;
       }

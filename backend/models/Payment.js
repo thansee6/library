@@ -12,7 +12,7 @@ const Payment = sequelize.define('Payment', {
     allowNull: false
   },
   amount: {
-    type: DataTypes.INTEGER, 
+    type: DataTypes.INTEGER,
     allowNull: false
   },
   currency: {
@@ -40,9 +40,9 @@ const Payment = sequelize.define('Payment', {
   indexes: [
     { fields: ['userId'] },
     { fields: ['status'] },
-    { fields: ['userId', 'status'] },              
-    { fields: ['userId', 'createdAt'] },            
-    { fields: ['status', 'createdAt'] }             
+    { fields: ['userId', 'status'] },
+    { fields: ['userId', 'createdAt'] },
+    { fields: ['status', 'createdAt'] }
   ]
 });
 

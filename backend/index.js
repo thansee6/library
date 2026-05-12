@@ -80,7 +80,12 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ 
+  limit: '10mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 // Static file serving for uploaded book covers
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {

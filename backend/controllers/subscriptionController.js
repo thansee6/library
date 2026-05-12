@@ -12,6 +12,8 @@ const razorpay = new Razorpay({
   key_secret: rzpKeySecret
 });
 
+const rzpWebhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || 'super_secret_webhook_key';
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.ethereal.email',
   port: process.env.SMTP_PORT || 587,
@@ -90,30 +92,14 @@ exports.createOrder = async (req, res) => {
       receipt: `receipt_sub_${Date.now()}`
     };
 
-    let order;
-    let isMock = false;
-
-    if (rzpKeyId.startsWith('rzp_test_mockKeyId')) {
-      isMock = true;
-      order = {
-        id: `order_mock_${Math.random().toString(36).substr(2, 9)}`,
-        amount: amountInPaise,
-        currency: 'INR',
-        receipt: options.receipt
-      };
-    } else {
-      try {
-        order = await razorpay.orders.create(options);
-      } catch (rzpErr) {
-        console.warn('Razorpay live order failed, falling back to mock mode:', rzpErr);
-        isMock = true;
-        order = {
-          id: `order_mock_${Math.random().toString(36).substr(2, 9)}`,
-          amount: amountInPaise,
-          currency: 'INR',
-          receipt: options.receipt
-        };
-      }
+    try {
+      order = await razorpay.orders.create(options);
+    } catch (rzpErr) {
+      console.error('Razorpay order creation failed:', rzpErr);
+      return res.status(500).json({ 
+        message: 'Failed to create payment order with Razorpay', 
+        error: rzpErr.message 
+      });
     }
 
     const payment = await Payment.create({
@@ -129,8 +115,8 @@ exports.createOrder = async (req, res) => {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: isMock ? 'mock_key_id' : rzpKeyId,
-      isMock,
+      keyId: rzpKeyId,
+      isMock: false,
       paymentId: payment.id
     });
   } catch (error) {
@@ -151,17 +137,13 @@ exports.verifyPayment = async (req, res) => {
 
     let isValid = false;
 
-    if (isMock || razorpay_order_id.startsWith('order_mock_')) {
-      isValid = true;
-    } else {
-      const text = `${razorpay_order_id}|${razorpay_payment_id}`;
-      const generated_signature = crypto
-        .createHmac('sha256', rzpKeySecret)
-        .update(text)
-        .digest('hex');
+    const text = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const generated_signature = crypto
+      .createHmac('sha256', rzpKeySecret)
+      .update(text)
+      .digest('hex');
 
-      isValid = generated_signature === razorpay_signature;
-    }
+    isValid = generated_signature === razorpay_signature;
 
     if (!isValid) {
       payment.status = 'failed';
@@ -170,7 +152,7 @@ exports.verifyPayment = async (req, res) => {
     }
 
     payment.status = 'completed';
-    payment.razorpayPaymentId = razorpay_payment_id || `pay_mock_${Math.random().toString(36).substr(2, 9)}`;
+    payment.razorpayPaymentId = razorpay_payment_id;
     await payment.save();
 
     const user = await User.findByPk(userId);
@@ -344,5 +326,70 @@ exports.adminGiveFreeSubscription = async (req, res) => {
   } catch (error) {
     console.error('Admin give free subscription error:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+exports.handleWebhook = async (req, res) => {
+  try {
+    const secret = rzpWebhookSecret;
+    const crypto = require('crypto');
+    const shasum = crypto.createHmac('sha256', secret);
+    
+    // Use rawBody set up in server config, fallback to stringified body for compatibility
+    const bodyString = req.rawBody ? req.rawBody.toString() : JSON.stringify(req.body);
+    shasum.update(bodyString);
+    
+    const digest = shasum.digest('hex');
+    const rzpSignature = req.headers['x-razorpay-signature'];
+
+    if (digest !== rzpSignature) {
+      console.warn('[WEBHOOK] Received request with invalid signature');
+      return res.status(400).json({ status: 'invalid signature' });
+    }
+
+    const event = req.body.event;
+    console.log(`[WEBHOOK] Received Razorpay event: ${event}`);
+
+    if (event === 'payment.captured') {
+      const paymentData = req.body.payload.payment.entity;
+      const orderId = paymentData.order_id;
+      const razorpayPaymentId = paymentData.id;
+
+      const payment = await Payment.findOne({ where: { razorpayOrderId: orderId } });
+      
+      if (payment) {
+        if (payment.status !== 'completed') {
+          payment.status = 'completed';
+          payment.razorpayPaymentId = razorpayPaymentId;
+          await payment.save();
+
+          const user = await User.findByPk(payment.userId);
+          if (user) {
+            let expiryDate = user.subscriptionExpiresAt ? new Date(user.subscriptionExpiresAt) : new Date();
+            if (expiryDate < new Date()) {
+              expiryDate = new Date();
+            }
+            expiryDate.setDate(expiryDate.getDate() + 30);
+
+            user.subscriptionStatus = 'active';
+            user.subscriptionExpiresAt = expiryDate;
+            await user.save();
+
+            const invoiceText = generateInvoiceText(user, payment);
+            sendInvoiceEmail(user, payment, invoiceText);
+            console.log(`[WEBHOOK] Fulfilled subscription for user ${user.id} via async webhook.`);
+          }
+        } else {
+          console.log(`[WEBHOOK] Payment ${orderId} was already handled by client sync callback.`);
+        }
+      } else {
+        console.warn(`[WEBHOOK] Payment matching orderId ${orderId} not found in DB.`);
+      }
+    }
+
+    res.json({ status: 'ok' });
+  } catch (error) {
+    console.error('[WEBHOOK ERROR]', error);
+    res.status(500).json({ status: 'server error' });
   }
 };

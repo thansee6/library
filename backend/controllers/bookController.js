@@ -70,7 +70,7 @@ exports.createBook = async (req, res) => {
     if (req.file) {
       bookData.coverImage = `/uploads/books/${req.file.filename}`;
     }
-    // Also set availableStock equal to initial stock
+   
     if (bookData.stock) {
       bookData.availableStock = bookData.stock;
     }
