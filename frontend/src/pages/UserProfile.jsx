@@ -536,25 +536,30 @@ const UserProfile = () => {
                         <span>🧾</span> Billing & Payment History
                       </h3>
 
-                      {paymentHistory.length === 0 ? (
-                        <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                          <span className="text-4xl block mb-2">📭</span>
-                          <p className="text-gray-400 text-sm font-medium">No transactions found on your account.</p>
-                        </div>
-                      ) : (
-                        <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
-                          <table className="w-full text-left border-collapse text-sm">
-                            <thead>
-                              <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 font-semibold">
-                                <th className="p-4">Invoice No</th>
-                                <th className="p-4">Date</th>
-                                <th className="p-4">Amount</th>
-                                <th className="p-4">Status</th>
-                                <th className="p-4 text-right">Invoice</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {paymentHistory.map((payment) => (
+                      {(() => {
+                        const filteredHistory = paymentHistory.filter(p => p.status !== 'pending');
+                        if (filteredHistory.length === 0) {
+                          return (
+                            <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                              <span className="text-4xl block mb-2">📭</span>
+                              <p className="text-gray-400 text-sm font-medium">No active transactions found on your account.</p>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
+                            <table className="w-full text-left border-collapse text-sm">
+                              <thead>
+                                <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 font-semibold">
+                                  <th className="p-4">Invoice No</th>
+                                  <th className="p-4">Date</th>
+                                  <th className="p-4">Amount</th>
+                                  <th className="p-4">Status</th>
+                                  <th className="p-4 text-right">Invoice</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filteredHistory.map((payment) => (
                                 <tr key={payment.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors">
                                   <td className="p-4 font-mono font-semibold text-[#1a237e]">
                                     {payment.invoiceNumber}
@@ -600,8 +605,9 @@ const UserProfile = () => {
                               ))}
                             </tbody>
                           </table>
-                        </div>
-                      )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </>
                 )}
