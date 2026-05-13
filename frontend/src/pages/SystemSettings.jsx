@@ -102,9 +102,10 @@ const SystemSettings = () => {
             <div className="space-y-4">
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
-                <label className="text-sm font-semibold text-gray-700">Max Book Borrow Limit</label>
+                <label htmlFor="borrowLimit" className="text-sm font-semibold text-gray-700">Max Book Borrow Limit</label>
                 <div className="md:col-span-2 relative">
                   <input
+                    id="borrowLimit"
                     type="number"
                     name="borrowLimit"
                     min="1"
@@ -120,9 +121,10 @@ const SystemSettings = () => {
 
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center pt-4 border-t border-gray-50">
-                <label className="text-sm font-semibold text-gray-700">Borrow Duration (Days)</label>
+                <label htmlFor="borrowDuration" className="text-sm font-semibold text-gray-700">Borrow Duration (Days)</label>
                 <div className="md:col-span-2 relative">
                   <input
+                    id="borrowDuration"
                     type="number"
                     name="borrowDuration"
                     min="1"
@@ -138,9 +140,10 @@ const SystemSettings = () => {
 
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center pt-4 border-t border-gray-50">
-                <label className="text-sm font-semibold text-gray-700">Overdue Fine Rate ($)</label>
+                <label htmlFor="fineRate" className="text-sm font-semibold text-gray-700">Overdue Fine Rate ($)</label>
                 <div className="md:col-span-2 relative">
                   <input
+                    id="fineRate"
                     type="number"
                     step="0.01"
                     name="fineRate"

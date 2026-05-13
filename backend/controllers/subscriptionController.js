@@ -198,7 +198,9 @@ exports.getSubscriptionStatus = async (req, res) => {
     let displayStatus = user.subscriptionStatus;
     const isSubscribed = user.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) > new Date();
 
-    if (isTrialActive && !isSubscribed) {
+    if (user.role === 'admin') {
+      displayStatus = 'active'; // Always display active for admin
+    } else if (isTrialActive && !isSubscribed) {
       displayStatus = 'trial';
     } else if (!isTrialActive && !isSubscribed) {
       displayStatus = 'overdue';

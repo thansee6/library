@@ -122,16 +122,22 @@ const Home = () => {
           <div className="flex-1 relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
             <input 
+              id="home-search"
+              name="search"
               type="text" 
               placeholder="Search by title or ISBN..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search by title or ISBN"
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a237e]/50 text-sm"
             />
           </div>
           <select 
+            id="home-category"
+            name="category"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
+            aria-label="Filter by category"
             className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white min-w-[200px] focus:outline-none focus:ring-2 focus:ring-[#1a237e]/50 text-sm text-gray-600 cursor-pointer"
           >
             <option value="">All Categories</option>

@@ -287,8 +287,10 @@ const UserManagement = () => {
             <h2 className="text-2xl font-bold text-[#1a237e] mb-6">Edit User</h2>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <label htmlFor="usermgmt-username" className="block text-sm font-medium text-gray-700 mb-1">Username</label>
                 <input 
+                  id="usermgmt-username"
+                  name="username"
                   type="text"
                   required
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -297,8 +299,10 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label htmlFor="usermgmt-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input 
+                  id="usermgmt-email"
+                  name="email"
                   type="email"
                   required
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -307,8 +311,10 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label htmlFor="usermgmt-role" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select 
+                  id="usermgmt-role"
+                  name="role"
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   value={formData.role}
                   onChange={e => setFormData({...formData, role: e.target.value})}

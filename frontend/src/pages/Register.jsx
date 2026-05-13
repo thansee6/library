@@ -53,17 +53,19 @@ const Register = () => {
 
         <form className="space-y-6" onSubmit={onSubmit}>
           <div>
-            <label className="block text-sm font-medium text-[#2c3e50] mb-2">Username</label>
+            <label htmlFor="register-username" className="block text-sm font-medium text-[#2c3e50] mb-2">Username</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aab2bd]">
                 <span style={{ fontSize: '1.2em' }}>👤</span>
               </span>
               <input
+                id="register-username"
                 type="text"
                 name="username"
                 value={username}
                 onChange={onChange}
                 required
+                autoComplete="username"
                 className="w-full pl-11 pr-4 py-3 rounded-lg bg-[#f0f4f8] border border-[#dce4ec] text-[#2c3e50] placeholder-[#aab2bd] focus:outline-none focus:ring-2 focus:ring-[#3f51b5]/30 focus:border-transparent transition-all"
                 placeholder="Enter your username"
               />
@@ -71,17 +73,19 @@ const Register = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#2c3e50] mb-2">Email Address</label>
+            <label htmlFor="register-email" className="block text-sm font-medium text-[#2c3e50] mb-2">Email Address</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aab2bd]">
                 <span style={{ fontSize: '1.2em' }}>✉</span>
               </span>
               <input
+                id="register-email"
                 type="email"
                 name="email"
                 value={email}
                 onChange={onChange}
                 required
+                autoComplete="email"
                 className="w-full pl-11 pr-4 py-3 rounded-lg bg-[#f0f4f8] border border-[#dce4ec] text-[#2c3e50] placeholder-[#aab2bd] focus:outline-none focus:ring-2 focus:ring-[#3f51b5]/30 focus:border-transparent transition-all"
                 placeholder="Enter your email"
               />
@@ -89,18 +93,20 @@ const Register = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#2c3e50] mb-2">Password</label>
+            <label htmlFor="register-password" className="block text-sm font-medium text-[#2c3e50] mb-2">Password</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aab2bd]">
                 <span style={{ fontSize: '1.2em' }}>🔒</span>
               </span>
               <input
+                id="register-password"
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={password}
                 onChange={onChange}
                 required
                 minLength="8"
+                autoComplete="new-password"
                 className="w-full pl-11 pr-11 py-3 rounded-lg bg-[#f0f4f8] border border-[#dce4ec] text-[#2c3e50] placeholder-[#aab2bd] focus:outline-none focus:ring-2 focus:ring-[#3f51b5]/30 focus:border-transparent transition-all"
                 placeholder="Create a password"
               />

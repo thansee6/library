@@ -71,8 +71,10 @@ const ActiveBorrows = () => {
         <div className="w-full flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* User Search */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">Filter by User</label>
+            <label htmlFor="borrow-user-search" className="block text-xs font-semibold text-gray-500 mb-1">Filter by User</label>
             <input
+              id="borrow-user-search"
+              name="userSearch"
               type="text"
               placeholder="Search by Username/Email..."
               value={userSearch}
@@ -83,8 +85,10 @@ const ActiveBorrows = () => {
 
           {/* Book Search */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">Filter by Book</label>
+            <label htmlFor="borrow-book-search" className="block text-xs font-semibold text-gray-500 mb-1">Filter by Book</label>
             <input
+              id="borrow-book-search"
+              name="bookSearch"
               type="text"
               placeholder="Search by Title/ISBN..."
               value={bookSearch}
@@ -95,8 +99,10 @@ const ActiveBorrows = () => {
 
           {/* Status Filter */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">Filter by Status</label>
+            <label htmlFor="borrow-status-filter" className="block text-xs font-semibold text-gray-500 mb-1">Filter by Status</label>
             <select
+              id="borrow-status-filter"
+              name="statusFilter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1a237e]/30 bg-gray-50/50 cursor-pointer"

@@ -228,8 +228,10 @@ const InventoryManagement = () => {
               {activeTab === 'books' ? (
                 <>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Title</label>
+                    <label htmlFor="inv-title" className="block text-xs font-semibold text-gray-500 mb-1">Title</label>
                     <input 
+                      id="inv-title"
+                      name="title"
                       required
                       className="w-full p-1.5 border rounded-lg text-sm"
                       value={formData.title || ''}
@@ -238,8 +240,10 @@ const InventoryManagement = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1">ISBN</label>
+                      <label htmlFor="inv-isbn" className="block text-xs font-semibold text-gray-500 mb-1">ISBN</label>
                       <input 
+                        id="inv-isbn"
+                        name="isbn"
                         required
                         className="w-full p-1.5 border rounded-lg text-sm"
                         value={formData.isbn || ''}
@@ -247,8 +251,10 @@ const InventoryManagement = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1">Stock</label>
+                      <label htmlFor="inv-stock" className="block text-xs font-semibold text-gray-500 mb-1">Stock</label>
                       <input 
+                        id="inv-stock"
+                        name="stock"
                         type="number"
                         className="w-full p-1.5 border rounded-lg text-sm"
                         value={formData.stock || 0}
@@ -258,8 +264,10 @@ const InventoryManagement = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1">Author</label>
+                      <label htmlFor="inv-author" className="block text-xs font-semibold text-gray-500 mb-1">Author</label>
                       <select 
+                        id="inv-author"
+                        name="authorId"
                         required
                         className="w-full p-1.5 border rounded-lg text-sm bg-white"
                         value={formData.authorId || ''}
@@ -270,8 +278,10 @@ const InventoryManagement = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1">Category</label>
+                      <label htmlFor="inv-category" className="block text-xs font-semibold text-gray-500 mb-1">Category</label>
                       <select 
+                        id="inv-category"
+                        name="categoryId"
                         required
                         className="w-full p-1.5 border rounded-lg text-sm bg-white"
                         value={formData.categoryId || ''}
@@ -283,8 +293,10 @@ const InventoryManagement = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Description</label>
+                    <label htmlFor="inv-description" className="block text-xs font-semibold text-gray-500 mb-1">Description</label>
                     <textarea 
+                      id="inv-description"
+                      name="description"
                       className="w-full p-1.5 border rounded-lg h-16 text-sm"
                       placeholder="Enter a brief summary..."
                       value={formData.description || ''}
@@ -292,7 +304,7 @@ const InventoryManagement = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Cover Image</label>
+                    <label htmlFor="inv-coverImage" className="block text-xs font-semibold text-gray-500 mb-1">Cover Image</label>
                     <div className="flex items-center gap-3 p-1.5 bg-gray-50/50 rounded-lg border border-gray-100 mb-2">
                       <div className="w-8 h-11 bg-gray-100 border border-gray-200 rounded flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
                         {selectedFile ? (
@@ -316,6 +328,8 @@ const InventoryManagement = () => {
                       </div>
                     </div>
                     <input 
+                      id="inv-coverImage"
+                      name="coverImage"
                       type="file"
                       accept="image/*"
                       className="w-full text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
@@ -326,8 +340,10 @@ const InventoryManagement = () => {
               ) : (
                 <>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
+                    <label htmlFor="inv-name" className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
                     <input 
+                      id="inv-name"
+                      name="name"
                       required
                       className="w-full p-1.5 border rounded-lg text-sm"
                       value={formData.name || ''}
@@ -335,10 +351,12 @@ const InventoryManagement = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    <label htmlFor="inv-bio-desc" className="block text-xs font-semibold text-gray-500 mb-1">
                       {activeTab === 'authors' ? 'Biography' : 'Description'}
                     </label>
                     <textarea 
+                      id="inv-bio-desc"
+                      name={activeTab === 'authors' ? 'biography' : 'description'}
                       className="w-full p-1.5 border rounded-lg h-24 text-sm"
                       value={activeTab === 'authors' ? formData.biography || '' : formData.description || ''}
                       onChange={e => setFormData({

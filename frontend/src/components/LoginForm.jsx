@@ -54,16 +54,19 @@ const LoginForm = ({ showRegisterLink = true, showForgotPassword = true, isCompa
 
       <form className="space-y-6" onSubmit={onSubmit}>
         <div>
-          <label className="block text-sm font-medium text-[#2c3e50] mb-2">Email Address</label>
+          <label htmlFor="loginform-email" className="block text-sm font-medium text-[#2c3e50] mb-2">Email Address</label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aab2bd]">
               <span style={{ fontSize: '1.2em' }}>✉</span>
             </span>
             <input
+              id="loginform-email"
+              name="email"
               type="email"
               value={email}
               onChange={onChange}
               required
+              autoComplete="email"
               className="w-full pl-11 pr-4 py-3 rounded-lg bg-[#f0f4f8] border border-[#dce4ec] text-[#2c3e50] placeholder-[#aab2bd] focus:outline-none focus:ring-2 focus:ring-[#1a237e]/30 focus:border-transparent transition-all"
               placeholder="Enter your email"
             />
@@ -72,7 +75,7 @@ const LoginForm = ({ showRegisterLink = true, showForgotPassword = true, isCompa
 
         <div>
           <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium text-[#2c3e50]">Password</label>
+            <label htmlFor="loginform-password" className="block text-sm font-medium text-[#2c3e50]">Password</label>
             {showForgotPassword && (
               <Link to="/forgot-password" size="sm" className="text-xs text-[#009688] hover:text-[#00796b] transition-colors">
                 Forgot password?
@@ -84,10 +87,13 @@ const LoginForm = ({ showRegisterLink = true, showForgotPassword = true, isCompa
               <span style={{ fontSize: '1.2em' }}>🔒</span>
             </span>
             <input
+              id="loginform-password"
+              name="password"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={onChange}
               required
+              autoComplete="current-password"
               className="w-full pl-11 pr-11 py-3 rounded-lg bg-[#f0f4f8] border border-[#dce4ec] text-[#2c3e50] placeholder-[#aab2bd] focus:outline-none focus:ring-2 focus:ring-[#1a237e]/30 focus:border-transparent transition-all"
               placeholder="••••••••"
             />

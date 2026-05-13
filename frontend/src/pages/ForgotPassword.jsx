@@ -51,15 +51,18 @@ const ForgotPassword = () => {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[#2c3e50] mb-2">Email Address</label>
+              <label htmlFor="forgot-email" className="block text-sm font-medium text-[#2c3e50] mb-2">Email Address</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aab2bd]">
                   <span style={{ fontSize: '1.2em' }}>✉</span>
                 </span>
                 <input
+                  id="forgot-email"
+                  name="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                   className="w-full pl-11 pr-4 py-3 rounded-lg bg-[#f0f4f8] border border-[#dce4ec] text-[#2c3e50] placeholder-[#aab2bd] focus:outline-none focus:ring-2 focus:ring-[#3f51b5]/30 focus:border-transparent transition-all"
                   placeholder="Enter your email"
                   required

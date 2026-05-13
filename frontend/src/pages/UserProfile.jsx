@@ -296,16 +296,18 @@ const UserProfile = () => {
             >
               🔒 Change Password
             </button>
-            <button
-              onClick={() => { setActiveTab('subscription'); setError(''); setSuccess(''); }}
-              className={`flex-1 min-w-[120px] py-4 px-4 font-semibold text-sm transition-all focus:outline-none border-b-2 whitespace-nowrap ${
-                activeTab === 'subscription'
-                  ? 'border-[#1a237e] text-[#1a237e] bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
-              }`}
-            >
-              💳 Subscription & Billing
-            </button>
+            {user?.role !== 'admin' && (
+              <button
+                onClick={() => { setActiveTab('subscription'); setError(''); setSuccess(''); }}
+                className={`flex-1 min-w-[120px] py-4 px-4 font-semibold text-sm transition-all focus:outline-none border-b-2 whitespace-nowrap ${
+                  activeTab === 'subscription'
+                    ? 'border-[#1a237e] text-[#1a237e] bg-white'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                }`}
+              >
+                💳 Subscription & Billing
+              </button>
+            )}
           </div>
 
           <div className="p-8">
@@ -340,8 +342,10 @@ const UserProfile = () => {
             {activeTab === 'edit' && (
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                  <label htmlFor="profile-username" className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
                   <input
+                    id="profile-username"
+                    name="username"
                     type="text"
                     required
                     value={username}
@@ -350,8 +354,10 @@ const UserProfile = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                  <label htmlFor="profile-email" className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
                   <input
+                    id="profile-email"
+                    name="email"
                     type="email"
                     required
                     value={email}
@@ -372,8 +378,10 @@ const UserProfile = () => {
             {activeTab === 'password' && (
               <form onSubmit={handleChangePassword} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                  <label htmlFor="profile-oldPassword" className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
                   <input
+                    id="profile-oldPassword"
+                    name="oldPassword"
                     type="password"
                     required
                     placeholder="••••••••"
@@ -383,8 +391,10 @@ const UserProfile = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                  <label htmlFor="profile-newPassword" className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
                   <input
+                    id="profile-newPassword"
+                    name="newPassword"
                     type="password"
                     required
                     placeholder="At least 6 characters"
@@ -394,8 +404,10 @@ const UserProfile = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                  <label htmlFor="profile-confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
                   <input
+                    id="profile-confirmPassword"
+                    name="confirmPassword"
                     type="password"
                     required
                     placeholder="••••••••"

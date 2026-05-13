@@ -271,6 +271,8 @@ const SupportChat = () => {
               {/* Input Form */}
               <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-100 flex gap-2 bg-white">
                 <input
+                  id="admin-chat-input"
+                  name="message"
                   type="text"
                   disabled={!selectedUser}
                   placeholder={selectedUser ? "Type your response..." : "Select a user first"}
@@ -354,6 +356,8 @@ const SupportChat = () => {
           {/* Input Form */}
           <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-100 flex gap-2 bg-white">
             <input
+              id="user-chat-input"
+              name="message"
               type="text"
               placeholder="Ask a question..."
               value={input}

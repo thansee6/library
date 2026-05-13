@@ -6,6 +6,11 @@ const getDashboardStats = async (req, res) => {
     const totalBooks = await Book.count();
     const activeUsers = await User.count(); 
     const totalBorrows = await Borrowing.count();
+    const activeBorrows = await Borrowing.count({
+      where: {
+        status: { [Op.in]: ['borrowed', 'overdue'] }
+      }
+    });
     const overdueBooks = await Borrowing.count({
       where: {
         status: { [Op.in]: ['borrowed', 'overdue'] },
@@ -17,6 +22,7 @@ const getDashboardStats = async (req, res) => {
       totalBooks,
       activeUsers,
       totalBorrows,
+      activeBorrows,
       overdueBooks
     });
   } catch (error) {

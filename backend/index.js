@@ -246,6 +246,7 @@ cron.schedule('0 9 * * *', async () => {
     // Find users whose subscription expires within the next 3 days
     const expiringUsers = await User.findAll({
       where: {
+        role: { [Op.ne]: 'admin' },
         subscriptionStatus: 'active',
         subscriptionExpiresAt: {
           [Op.between]: [now, threeDaysFromNow]
@@ -285,6 +286,7 @@ cron.schedule('0 9 * * *', async () => {
     // Mark expired subscriptions as overdue
     const expired = await User.findAll({
       where: {
+        role: { [Op.ne]: 'admin' },
         subscriptionStatus: 'active',
         subscriptionExpiresAt: { [Op.lt]: now }
       },
